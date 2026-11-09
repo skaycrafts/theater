@@ -11,8 +11,36 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="splash.css">
+  <script>
+    /* show the opening splash once per visit (add ?splash to the URL to see it again) */
+    try {
+      if (sessionStorage.getItem('kamala-splash') && !/[?&]splash/.test(location.search)) document.documentElement.classList.add('no-splash');
+    } catch (e) {}
+  </script>
+  <script src="splash.js" defer></script>
 </head>
 <body>
+
+  <!-- Opening splash: pull the curtains open -->
+  <div class="splash" id="splash" role="dialog" aria-modal="true" aria-label="Welcome to Kamala Cinemas">
+    <div class="spl-screen" aria-hidden="true"><canvas id="spLeader" width="360" height="360"></canvas></div>
+    <canvas class="spl-dust" id="spDust" aria-hidden="true"></canvas>
+    <div class="spl-beam" aria-hidden="true"></div>
+    <div class="curtain left" aria-hidden="true"></div>
+    <div class="curtain right" aria-hidden="true"></div>
+    <div class="spl-valance" aria-hidden="true"></div>
+    <div class="spl-center">
+      <img class="spl-logo" src="assets/kamala-logo.png" alt="Kamala Cinemas" width="1000" height="200">
+      <p class="spl-place">Vadapalani · Chennai</p>
+      <p class="spl-tag">See the screen from your seat<br>before you book.</p>
+    </div>
+    <button class="spl-open" id="spOpen">
+      <span class="spl-hands" aria-hidden="true"><i></i><i></i></span>
+      <span class="spl-hint-text">Swipe to open the curtains</span>
+    </button>
+    <button class="spl-skip" id="spSkip">Skip</button>
+  </div>
 
   <header class="topbar">
     <a class="brand" href="#" data-go="movies" aria-label="Kamala Cinemas home">
