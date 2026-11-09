@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kamala Cinemas — Book Tickets</title>
+  <meta name="description" content="Book movie tickets at Kamala Cinemas and see the view of the screen from your seat before you book.">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <meta name="theme-color" content="#0b0b0d">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <a class="brand" href="#" data-go="movies" aria-label="Kamala Cinemas home">
+      <img class="brand-logo" src="assets/kamala-logo.png" alt="Kamala Cinemas" width="1000" height="200">
+    </a>
+    <ol class="stepper" id="stepper" aria-label="Booking steps">
+      <li data-step="movies"><span>1</span>Movie</li>
+      <li data-step="shows"><span>2</span>Showtime</li>
+      <li data-step="seats"><span>3</span>Seats</li>
+      <li data-step="checkout"><span>4</span>Checkout</li>
+    </ol>
+  </header>
+
+  <main>
+    <!-- STEP 1: MOVIES -->
+    <section id="view-movies" class="view active" aria-labelledby="nowShowing">
+      <div class="lobby" id="lobby" aria-label="Now showing">
+        <div class="lobby-bg" id="lobbyBg" aria-hidden="true"></div>
+        <div class="lobby-lights" aria-hidden="true"><i></i><i></i></div>
+        <div class="marquee" aria-hidden="true"></div>
+        <div class="lobby-inner">
+          <div class="lobby-info" id="lobbyInfo" aria-live="polite"></div>
+          <div class="cf-stage">
+            <div class="coverflow" id="coverflow" aria-roledescription="carousel"></div>
+            <div class="cf-nav">
+              <button id="cfPrev" aria-label="Previous movie">‹</button>
+              <div class="cf-dots" id="cfDots"></div>
+              <button id="cfNext" aria-label="Next movie">›</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h2 class="section-title" id="nowShowing">Today at Kamala</h2>
+        <p>Tap a showtime to walk straight into the hall.</p>
+      </div>
+      <div class="movie-grid" id="movieGrid"></div>
+
+      <div class="soon-head">
+        <div>
+          <h2 class="section-title" id="comingSoon">Coming Soon</h2>
+          <p class="soon-note">Kamala hasn't announced its next titles yet. These are the films opening across Chennai this week.</p>
+        </div>
+        <div class="soon-filters" id="soonFilters" role="tablist" aria-label="Filter by language"></div>
+      </div>
+      <div class="soon-row" id="soonRow" aria-labelledby="comingSoon"></div>
+
+      <div class="theatre-info" id="theatreInfo"></div>
+    </section>
+
+    <!-- STEP 2: SHOWTIMES -->
+    <section id="view-shows" class="view">
+      <div class="show-hero" id="showHero">
+        <div class="show-bg" id="showBg" aria-hidden="true"></div>
+        <div class="show-hero-inner">
+          <button class="back" data-go="movies">← All movies</button>
+          <div class="show-grid">
+            <div class="poster3d" id="showPoster" data-tilt></div>
+            <div class="show-head" id="showHead"></div>
+          </div>
+        </div>
+      </div>
+      <div class="show-body">
+        <h3 class="label">Pick a date</h3>
+        <div class="dates" id="dates"></div>
+        <h3 class="label">Pick a showtime</h3>
+        <div class="times" id="times"></div>
+        <div class="avail-legend">
+          <span><i class="dot ok"></i>Available</span>
+          <span><i class="dot mid"></i>Filling fast</span>
+          <span><i class="dot hot"></i>Almost full</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 3: SEATS — map of every seat, then fly into the one you tap -->
+    <section id="view-seats" class="view">
+      <div class="stage" id="stage">
+        <div class="stage-loader" id="stageLoader"><i></i><span>Opening the doors…</span></div>
+
+        <!-- 1. Seat map: every seat visible at once -->
+        <div class="seatpick" id="seatpick">
+          <header class="sp-head">
+            <button class="sp-icon" data-go="shows" aria-label="Back to showtimes">‹</button>
+            <div class="sp-title"><b id="spTitle">–</b><small id="spSub">–</small></div>
+            <span class="sp-icon ghost" aria-hidden="true"></span>
+          </header>
+          <div class="sp-times" id="spTimes" role="tablist" aria-label="Showtimes"></div>
+          <div class="sp-screen" aria-hidden="true"><span>SCREEN</span></div>
+          <div class="sp-map" id="spMap" role="application" aria-label="Seat map. Tap a seat to see the view from it."></div>
+          <div class="sp-legend">
+            <span><i class="lg-av"></i>Available</span>
+            <span><i class="lg-tk"></i>Taken</span>
+            <span><i class="lg-cp"></i>Couple sofa</span>
+            <span><i class="lg-bu"></i>Budget</span>
+            <span><i class="lg-sel"></i>Selected</span>
+          </div>
+          <p class="sp-tip">Tap any seat to see the screen from it</p>
+          <div class="sp-bar">
+            <div class="sp-bar-info"><small id="spSel">Choose your seat</small><b id="spTotal">—</b></div>
+            <button class="sp-continue" id="toCheckout" disabled>Continue</button>
+          </div>
+        </div>
+
+        <!-- 2. View from the seat -->
+        <div class="seatview" id="seatview" hidden>
+          <div class="sv-top">
+            <button class="sp-icon" id="svBack" aria-label="Back to the seat map">‹</button>
+            <span class="sv-chip"><i></i>View from <b id="svSeat">–</b></span>
+            <button class="sp-icon" id="soundBtn" aria-pressed="false" aria-label="Trailer sound">🔇</button>
+          </div>
+          <p class="sv-hint" id="svHint">Drag to look around</p>
+          <div class="sheet" id="sheet" aria-live="polite">
+            <div class="grabber" aria-hidden="true"></div>
+            <div class="sh-row">
+              <div class="sh-id">
+                <span class="sh-tag" id="shTag">Sweet spot</span>
+                <h3 id="shSeat">–</h3>
+                <small id="shSub">–</small>
+              </div>
+              <canvas class="sh-mini" id="shMini" aria-hidden="true"></canvas>
+            </div>
+            <div class="sh-stats">
+              <div><b id="shDist">–</b><small>to screen</small></div>
+              <div><b id="shFov">–</b><small>field of view</small></div>
+              <div><b id="shOff">–</b><small>off centre</small></div>
+            </div>
+            <div class="sh-nav" aria-label="Try nearby seats">
+              <button data-nav="-1,0" aria-label="Seat to the left">‹</button>
+              <button data-nav="0,-1" aria-label="Row closer to the screen">Closer</button>
+              <button data-nav="0,1" aria-label="Row further back">Further</button>
+              <button data-nav="1,0" aria-label="Seat to the right">›</button>
+            </div>
+            <div class="sh-actions">
+              <button class="sh-change" id="shChange">Change seat</button>
+              <button class="sh-book" id="pickBtn">Select</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="toast" id="toast" role="status" hidden></div>
+      </div>
+    </section>
+
+    <!-- STEP 4: CHECKOUT -->
+    <section id="view-checkout" class="view">
+      <div class="co-top">
+        <button class="back" data-go="seats">← Back to the hall</button>
+        <div class="hold" id="hold" role="timer" aria-live="off">
+          <span class="hold-ring" id="holdRing" aria-hidden="true"></span>
+          <span>Seats held for</span><b id="holdTime">08:00</b>
+        </div>
+      </div>
+      <div class="co-grid">
+        <div class="co-pass-col">
+          <div class="pass" id="pass" data-tilt></div>
+          <p class="pass-note">Your ticket fills in as you type ✨</p>
+        </div>
+        <form class="co-form" id="checkoutForm" novalidate>
+          <div class="co-step"><span class="co-num">1</span><h2>Who's watching?</h2></div>
+          <div class="field"><input id="fName" name="name" required autocomplete="name" placeholder=" "><label for="fName">Full name</label></div>
+          <div class="field-row">
+            <div class="field prefix"><span class="pre">+91</span><input id="fPhone" name="phone" required inputmode="numeric" pattern="[0-9]{10}" maxlength="10" autocomplete="tel-national" placeholder=" "><label for="fPhone">Mobile number</label></div>
+            <div class="field"><input id="fEmail" name="email" type="email" required autocomplete="email" placeholder=" "><label for="fEmail">Email</label></div>
+          </div>
+
+          <div class="co-step"><span class="co-num">2</span><h2>Pay with</h2></div>
+          <div class="pay-methods" role="radiogroup" aria-label="Payment method">
+            <label class="pay-opt"><input type="radio" name="pay" value="upi" checked><span class="po-ico">⚡</span><b>UPI</b><small>GPay, PhonePe, Paytm</small></label>
+            <label class="pay-opt"><input type="radio" name="pay" value="card"><span class="po-ico">💳</span><b>Card</b><small>Debit or credit</small></label>
+            <label class="pay-opt"><input type="radio" name="pay" value="netbanking"><span class="po-ico">🏦</span><b>Net banking</b><small>All major banks</small></label>
+          </div>
+
+          <div class="co-step"><span class="co-num">3</span><h2>Summary</h2></div>
+          <div class="co-summary" id="summary"></div>
+          <label class="agree"><input type="checkbox" name="agree" required><span>I understand tickets at Kamala Cinemas are <b>non-cancellable</b>.</span></label>
+          <button class="btn primary wide pay" type="submit" id="payBtn">Pay</button>
+          <p class="fine">Demo checkout — no real payment is taken and no details are stored.</p>
+        </form>
+      </div>
+    </section>
+
+    <!-- DONE -->
+    <section id="view-done" class="view">
+      <div class="done" id="done"></div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <img class="foot-logo" src="assets/kamala-logo.png" alt="Kamala Cinemas" width="1000" height="200">
+    <span>156, Arcot Road, Vadapalani, Chennai 600026 · 2 screens · 4K RGB Laser · Dolby 7.1</span>
+  </footer>
+
+  <div class="modal" id="trailerModal" hidden role="dialog" aria-modal="true" aria-labelledby="trailerTitle">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div><h2 id="trailerTitle">Trailer</h2><small id="trailerMeta"></small></div>
+        <button class="modal-x" aria-label="Close trailer">✕</button>
+      </div>
+      <div class="modal-video" id="trailerFrame"></div>
+      <div class="modal-foot"><button class="btn primary" id="trailerBook" data-movie="">Book tickets</button></div>
+    </div>
+  </div>
+
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }
+  </script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
