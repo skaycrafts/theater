@@ -23,13 +23,12 @@ html.no-splash .splash, html.splash-done .splash { display: none; }
 }
 .spl-screen canvas { position: absolute; top: 5%; left: 50%; height: 90%; width: auto; aspect-ratio: 1; transform: translateX(-50%); }
 
-/* projector beam + dust */
+/* projector beam */
 .spl-beam {
   position: absolute; left: 50%; top: -10%; width: 160vw; height: 120%; transform: translateX(-50%);
   background: conic-gradient(from 180deg at 50% 0%, transparent 0 168deg, rgba(255,255,255,.07) 176deg 184deg, transparent 192deg);
   pointer-events: none; mix-blend-mode: screen; opacity: calc(.4 + var(--open) * .6);
 }
-.spl-dust { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
 
 /* velvet curtains */
 .curtain {
@@ -91,12 +90,11 @@ html.no-splash .splash, html.splash-done .splash { display: none; }
 }
 .spl-hands { position: relative; width: 120px; height: 44px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); backdrop-filter: blur(6px); }
 .spl-hands i {
-  position: absolute; top: 50%; width: 30px; height: 30px; margin-top: -15px; border-radius: 50%;
-  background: #6fdc9a; box-shadow: 0 0 20px rgba(111,220,154,.6);
+  position: absolute; top: 50%; margin-top: -14px; width: 28px; height: 28px; line-height: 26px; text-align: center;
+  font-style: normal; font-size: 26px; font-weight: 300; color: rgba(255,255,255,.85);
 }
 .spl-hands i:first-child { left: 50%; margin-left: -34px; animation: pullL 1.8s ease-in-out infinite; }
 .spl-hands i:last-child { left: 50%; margin-left: 4px; animation: pullR 1.8s ease-in-out infinite; }
-.spl-hands i::after { content: ""; position: absolute; inset: 9px; border-radius: 50%; background: #06210f; opacity: .35; }
 @keyframes pullL { 0%, 15% { transform: translateX(0); } 60%, 100% { transform: translateX(-36px); opacity: .25; } }
 @keyframes pullR { 0%, 15% { transform: translateX(0); } 60%, 100% { transform: translateX(36px); opacity: .25; } }
 .spl-hint-text { font-size: 13px; font-weight: 600; letter-spacing: .5px; color: rgba(255,255,255,.8); }
@@ -113,6 +111,9 @@ html.no-splash .splash, html.splash-done .splash { display: none; }
   .spl-hint-text::after { content: " — or click"; color: rgba(255,255,255,.5); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .spl-logo, .spl-place, .spl-tag, .spl-open, .spl-skip, .spl-hands i { animation: none !important; }
+  .spl-logo, .spl-place, .spl-tag, .spl-open, .spl-skip, .spl-hands i {
+  position: absolute; top: 50%; margin-top: -14px; width: 28px; height: 28px; line-height: 26px; text-align: center;
+  font-style: normal; font-size: 26px; font-weight: 300; color: rgba(255,255,255,.85);
+}
   .curtain { transition-duration: .3s; }
 }
