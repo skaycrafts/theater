@@ -22,8 +22,8 @@ function seatGeometry() {
   const parts = [];
   const box = (w, h, d, x, y, z) => { const g = new THREE.BoxGeometry(w, h, d); g.translate(x, y, z); parts.push(g); };
   box(0.48, 0.14, 0.46, 0, 0.44, 0.0);       // cushion
-  box(0.48, 0.6, 0.12, 0, 0.8, 0.25);        // backrest (behind the sitter, +z)
-  box(0.44, 0.1, 0.14, 0, 1.12, 0.24);       // head roll
+  box(0.5, 0.8, 0.13, 0, 0.88, 0.25);        // high-back rest (Kamala's seats) up to head height, behind the sitter (+z)
+  box(0.46, 0.09, 0.16, 0, 1.3, 0.24);       // padded head roll — top at ~1.35 m
   box(0.06, 0.2, 0.48, -0.25, 0.58, 0.0);    // arm L
   box(0.06, 0.2, 0.48, 0.25, 0.58, 0.0);     // arm R
   box(0.4, 0.38, 0.34, 0, 0.19, 0.04);       // base
@@ -31,9 +31,10 @@ function seatGeometry() {
 }
 function personGeometry() {
   const head = new THREE.SphereGeometry(0.12, 16, 12);
-  head.scale(1, 1.15, 1); head.translate(0, 1.22, 0.08);
+  // seated person: only the very top of the head clears a high-back seat
+  head.scale(1, 1.15, 1); head.translate(0, 1.19, 0.06);
   const torso = new THREE.CapsuleGeometry(0.16, 0.26, 4, 12);
-  torso.scale(1.3, 1, 0.75); torso.translate(0, 0.8, 0.12);
+  torso.scale(1.3, 1, 0.75); torso.translate(0, 0.78, 0.1);
   return mergeGeometries([head.toNonIndexed(), torso.toNonIndexed()]);
 }
 
@@ -435,7 +436,7 @@ export class Theater3D {
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), p = new THREE.Vector3();
     this.seatList.forEach((s, i) => {
       const couple = s.type !== 'S';
-      sc.set(couple ? 1.17 : 1, couple ? 1.05 : 1, couple ? 1.1 : 1);
+      sc.set(couple ? 1.17 : 1, 1, couple ? 1.1 : 1);
       p.set(s.x, s.y - 1.15, s.z);
       m.compose(p, q, sc);
       this.seatMesh.setMatrixAt(i, m);

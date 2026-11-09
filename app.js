@@ -123,7 +123,7 @@ const SCREENS = {
 };
 
 /* ---------- Build 3D hall geometry + seat index for a screen ---------- */
-const PITCH = 0.56, EYE = 1.15, RISE = 0.24, FIRST_Z = 4.6;
+const PITCH = 0.56, EYE = 1.15, RISE = 0.36, FIRST_Z = 4.6;   // steep stadium rise: you see over the high-back seat in front
 function buildHall(screenId) {
   const sc = SCREENS[screenId];
   const listing = [];
@@ -156,11 +156,14 @@ function buildHall(screenId) {
   const hallW = cols * PITCH;
   const screenW = Math.min(hallW * 0.82, 16.5);
   const screenH = screenW / 2.3;
+  const midEye = rows[Math.floor(rows.length / 2)].floor + EYE;
+  const screenBottom = Math.max(1.5, midEye - screenH * 0.38);
   return {
     id: screenId, cols, rows, seats, screen: sc,
     wallX: hallW / 2 + 1.2,
-    screenW, screenH, screenBottom: 1.5, screenCentreY: 1.5 + screenH / 2,
-    ceiling: Math.max(11, floor + 6),
+    // stadium halls mount the screen high so back rows look over the high-back seats in front
+    screenW, screenH, screenBottom, screenCentreY: screenBottom + screenH / 2,
+    ceiling: Math.max(11, floor + 6, screenBottom + screenH + 3),
     backZ: z + 1.5,
     floorAt(zz) { let f = 0; for (const rw of rows) if (rw.z - 0.5 <= zz) f = rw.floor; return f; },
   };
@@ -711,9 +714,6 @@ function updateSheet(id) {
     ? `Row ${row.rowId}, Seats ${[num, partner.label.slice(row.rowId.length)].sort((a, b) => a - b).join('–')}`
     : `Row ${row.rowId}, Seat ${num}`;
   $('#shSub').textContent = `${s.area.name}${partner ? ' · couple sofa' : ''} · ${rupee(s.area.price * n)}`;
-  $('#shDist').textContent = Math.hypot(s.x, s.z).toFixed(1) + ' m';
-  $('#shFov').textContent = Math.round(q.angW) + '°';
-  $('#shOff').textContent = Math.abs(s.x).toFixed(1) + ' m';
   const b = $('#pickBtn');
   b.disabled = sold;
   b.classList.toggle('remove', mine);
@@ -790,13 +790,6 @@ $('#pickBtn').addEventListener('click', () => {
   const label = state.hall.seats.get(viewing).label;
   const added = toggleSeat(viewing);
   if (added) { toast(`Seat ${label} selected`); setTimeout(backToMap, 450); }
-});
-$('#sheet').addEventListener('click', (e) => {
-  const b = e.target.closest('[data-nav]');
-  if (!b || !viewing) return;
-  const [dx, dr] = b.dataset.nav.split(',').map(Number);
-  const next = theater.neighbour(viewing, dx, dr);
-  if (next) previewSeat(next, true); else toast('No seat that way');
 });
 // swipe the sheet down to go back to the map
 let sheetY = null;
