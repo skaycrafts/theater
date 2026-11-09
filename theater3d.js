@@ -42,7 +42,7 @@ export class Theater3D {
   constructor(stage, { onHover, onSeatClick, onMode } = {}) {
     this.stage = stage;
     this.cb = { onHover: onHover || (() => {}), onSeatClick: onSeatClick || (() => {}), onMode: onMode || (() => {}) };
-    this.mode = 'hall';
+    this.mode = 'map';
     this.running = false;
     this.hoverIndex = -1;
     this.occupied = new Set();
@@ -582,6 +582,7 @@ export class Theater3D {
   _loop(t) {
     if (!this.running) return;
     requestAnimationFrame(this._loop);
+    if (!this.hall) return;                       // hall is built just after the seat map appears
     // while the 2D seat map is on top, don't burn battery re-rendering an unchanged hall
     if (this.mode === 'map' && !this.anim && !this._dirty) return;
     this._dirty = false;

@@ -1250,3 +1250,34 @@ button.tc-time:hover small { color: rgba(6,33,15,.7) !important; }
   .seatpick, .sheet { transition: opacity .2s; }
 }
 .sh-row + .sh-actions { margin-top: 16px; }
+
+/* ---------- v7: steadier lobby + snappier taps ---------- */
+/* all films' details share one grid cell, so the lobby never changes height */
+.lobby-info { display: grid; }
+.li-slide { grid-area: 1 / 1; opacity: 0; visibility: hidden; transition: opacity .45s ease, visibility 0s .45s; }
+.li-slide.on { opacity: 1; visibility: visible; transition: opacity .45s ease; }
+.li-slide.on > * { animation: rise .6s cubic-bezier(.2,.8,.2,1) both; }
+.li-slide.on > *:nth-child(2) { animation-delay: .04s; }
+.li-slide.on > *:nth-child(3) { animation-delay: .08s; }
+.li-slide.on > *:nth-child(4) { animation-delay: .12s; }
+.li-slide.on > *:nth-child(5) { animation-delay: .16s; }
+.li-slide.on > *:nth-child(6) { animation-delay: .2s; }
+.li-slide.on > *:nth-child(7) { animation-delay: .24s; }
+
+/* nothing animates in the lobby once it's scrolled off screen */
+.lobby.paused .lobby-lights i, .lobby.paused .marquee { animation-play-state: paused; }
+.lobby.paused .lb-layer { transition: none; }
+
+/* instant, responsive taps on phones */
+button, a, .pay-opt, .stub, .tkt { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.btn:active:not(:disabled), .tc-time:active, .tkt:active, .stub:active:not(:disabled), .pill:active, .sp-continue:active:not(:disabled), .sh-book:active, .sh-change:active { transform: scale(.97); transition: transform .06s; }
+.view { animation-duration: .2s; }
+[data-tilt] { will-change: auto; }
+[data-tilt].tilting { will-change: transform; }
+
+@media (max-width: 860px) {
+  /* lighter effects on phones: no blurred moving spotlights, cheaper backdrop blur */
+  .lobby-lights { display: none; }
+  .lb-layer { filter: blur(28px) saturate(1.4) brightness(.5); transform: scale(1.1); }
+  .marquee { animation: none; }
+}

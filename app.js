@@ -226,7 +226,7 @@ function go(step) {
   });
   document.body.classList.toggle('immersive', step === 'seats');
   if (step === 'seats') theater.start(); else theater.stop();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top: 0, behavior: 'instant' });
 }
 document.addEventListener('click', (e) => {
   const t = e.target.closest('[data-go]');
@@ -284,6 +284,8 @@ function renderMovies() {
 
 /* Coverflow carousel of now-showing posters */
 let cf = 0, cfTimer = null;
+let cfAuto = true;          // auto-advance until the visitor touches the carousel
+let lobbyInView = true;     // only auto-advance while the lobby is actually on screen
 function renderLobby() {
   $('#coverflow').innerHTML = MOVIES.map((m, i) => `
     <div class="cf-card" data-cf="${i}" role="group" aria-roledescription="slide" aria-label="${m.title}">
@@ -291,6 +293,24 @@ function renderLobby() {
       <div class="cf-reflect" style="background-image:url('${m.poster}')"></div>
     </div>`).join('');
   $('#cfDots').innerHTML = MOVIES.map((m, i) => `<button data-cfdot="${i}" aria-label="Show ${m.title}"></button>`).join('');
+  // every film's details are rendered once and stacked in the same spot, so switching films
+  // never changes the lobby's height (no jumping while you scroll)
+  $('#lobbyInfo').innerHTML = MOVIES.map((m, i) => {
+    const d = firstDateFor(m.id);
+    const next = showsFor(m.id, d).filter((s) => !s.closed).slice(0, 4);
+    return `<div class="li-slide" data-slide="${i}">
+      <span class="lobby-kicker">Now showing at Kamala · ${m.tag}</span>
+      <h1 class="lobby-title">${m.title}</h1>
+      <p class="lobby-meta"><span class="cert-pill">${m.cert}</span>${m.genre} · ${m.lang} · ${m.dur}</p>
+      <p class="lobby-blurb">${m.blurb}</p>
+      <p class="lobby-credits">Dir. ${m.director} · ${m.cast}</p>
+      <div class="lobby-next"><span>${shortDay(d)}</span>${next.map((s) => `<b>${s.time}</b>`).join('')}</div>
+      <div class="lobby-cta">
+        <button class="btn primary" data-movie="${m.id}">Book tickets</button>
+        <button class="btn ghost" data-trailer="${m.id}">▶ Watch trailer</button>
+      </div>
+    </div>`;
+  }).join('');
   setCf(cf);
   startCfTimer();
 }
@@ -309,6 +329,12 @@ function setCf(i) {
     c.classList.toggle('active', d === 0);
   });
   $$('[data-cfdot]').forEach((b, j) => b.classList.toggle('on', j === cf));
+  $$('.li-slide').forEach((s, j) => {
+    const on = j === cf;
+    s.classList.toggle('on', on);
+    s.setAttribute('aria-hidden', String(!on));
+    s.inert = !on;
+  });
   const m = MOVIES[cf];
   const bg = $('#lobbyBg');
   const layer = document.createElement('div');
@@ -318,49 +344,42 @@ function setCf(i) {
   requestAnimationFrame(() => requestAnimationFrame(() => layer.classList.add('in')));
   while (bg.children.length > 2) bg.firstElementChild.remove();
   $('#lobby').style.setProperty('--accent', m.colors[0]);
-  const d = firstDateFor(m.id);
-  const next = showsFor(m.id, d).filter((s) => !s.closed).slice(0, 4);
-  const info = $('#lobbyInfo');
-  info.innerHTML = `
-    <span class="lobby-kicker">Now showing at Kamala · ${m.tag}</span>
-    <h1 class="lobby-title">${m.title}</h1>
-    <p class="lobby-meta"><span class="cert-pill">${m.cert}</span>${m.genre} · ${m.lang} · ${m.dur}</p>
-    <p class="lobby-blurb">${m.blurb}</p>
-    <p class="lobby-credits">Dir. ${m.director} · ${m.cast}</p>
-    <div class="lobby-next"><span>${shortDay(d)}</span>${next.map((s) => `<b>${s.time}</b>`).join('')}</div>
-    <div class="lobby-cta">
-      <button class="btn primary" data-movie="${m.id}">Book tickets</button>
-      <button class="btn ghost" data-trailer="${m.id}">▶ Watch trailer</button>
-    </div>`;
-  info.classList.remove('swap'); void info.offsetWidth; info.classList.add('swap');
 }
 function startCfTimer() {
   clearInterval(cfTimer);
   cfTimer = setInterval(() => {
-    if (state.step === 'movies' && !document.hidden && !$('#lobby').matches(':hover') && $('#trailerModal').hidden) setCf(cf + 1);
+    if (cfAuto && lobbyInView && state.step === 'movies' && !document.hidden && !$('#lobby').matches(':hover') && $('#trailerModal').hidden) setCf(cf + 1);
   }, 7000);
 }
+const stopAuto = () => { cfAuto = false; };
+// pause the carousel + its animations whenever the lobby isn't on screen
+new IntersectionObserver(([e]) => {
+  lobbyInView = e.intersectionRatio >= 0.55;
+  $('#lobby').classList.toggle('paused', !e.isIntersecting);
+}, { threshold: [0, 0.55] }).observe($('#lobby'));
+// once you scroll down to browse, stop rotating for good
+window.addEventListener('scroll', () => { if (state.step === 'movies' && window.scrollY > 240) stopAuto(); }, { passive: true });
 let cfDown = null, cfSwiped = false;
 $('#coverflow').addEventListener('click', (e) => {
   const c = e.target.closest('.cf-card');
   if (!c || cfSwiped) return;
   if (c.classList.contains('active')) selectMovie(MOVIES[cf].id);
-  else { setCf(+c.dataset.cf); startCfTimer(); }
+  else { stopAuto(); setCf(+c.dataset.cf); }
 });
-$('#cfPrev').addEventListener('click', () => { setCf(cf - 1); startCfTimer(); });
-$('#cfNext').addEventListener('click', () => { setCf(cf + 1); startCfTimer(); });
-$('#cfDots').addEventListener('click', (e) => { const b = e.target.closest('[data-cfdot]'); if (b) { setCf(+b.dataset.cfdot); startCfTimer(); } });
+$('#cfPrev').addEventListener('click', () => { stopAuto(); setCf(cf - 1); });
+$('#cfNext').addEventListener('click', () => { stopAuto(); setCf(cf + 1); });
+$('#cfDots').addEventListener('click', (e) => { const b = e.target.closest('[data-cfdot]'); if (b) { stopAuto(); setCf(+b.dataset.cfdot); } });
 $('#coverflow').addEventListener('pointerdown', (e) => { cfDown = e.clientX; cfSwiped = false; });
 $('#coverflow').addEventListener('pointerup', (e) => {
   if (cfDown === null) return;
   const dx = e.clientX - cfDown;
   cfDown = null;
-  if (Math.abs(dx) > 40) { cfSwiped = true; setCf(cf + (dx < 0 ? 1 : -1)); startCfTimer(); setTimeout(() => { cfSwiped = false; }, 0); }
+  if (Math.abs(dx) > 40) { cfSwiped = true; stopAuto(); setCf(cf + (dx < 0 ? 1 : -1)); setTimeout(() => { cfSwiped = false; }, 0); }
 });
 document.addEventListener('keydown', (e) => {
   if (state.step !== 'movies' || e.target.closest?.('input, textarea') || !$('#trailerModal').hidden) return;
-  if (e.key === 'ArrowLeft') { setCf(cf - 1); startCfTimer(); }
-  if (e.key === 'ArrowRight') { setCf(cf + 1); startCfTimer(); }
+  if (e.key === 'ArrowLeft') { stopAuto(); setCf(cf - 1); }
+  if (e.key === 'ArrowRight') { stopAuto(); setCf(cf + 1); }
 });
 window.addEventListener('resize', () => { if (state.step === 'movies') setCf(cf); });
 
@@ -577,15 +596,15 @@ function renderSeats() {
   $('.sp-legend .lg-bu').parentElement.lastChild.textContent = `Budget ${rupee(prices[prices.length - 1])}`;
   $('.sp-legend .lg-av').parentElement.lastChild.textContent = `Available ${rupee(prices[0])}`;
   viewing = null;
-  $('#stageLoader').hidden = false;
+  $('#stageLoader').hidden = true;                  // the 2D map is the first screen — show it straight away
   showMap(true);
   $('#sheet').classList.remove('up');
-  theater.setStates(state.occupied, state.selected);
-  theater.setHall(state.hall, m, m.trailer);
   setSound(false);
   updateBar();
   requestAnimationFrame(() => { buildMap(); });      // after layout so the map can size itself
-  setTimeout(() => { $('#stageLoader').hidden = true; }, 450);
+  // build the heavier 3D hall just after the map is on screen
+  clearTimeout(hallBuildT);
+  hallBuildT = setTimeout(ensureHall, 120);
 }
 $('#spTimes').addEventListener('click', (e) => {
   const b = e.target.closest('[data-pill]');
@@ -675,7 +694,16 @@ function showMap(on) {
   $('#seatview').hidden = on;
 }
 
+let hallBuildT = null;
+function ensureHall() {
+  clearTimeout(hallBuildT);
+  if (theater.hall === state.hall && theater.movie === state.movie && theater._show === state.show) return;
+  theater.setStates(state.occupied, state.selected);
+  theater.setHall(state.hall, state.movie, state.movie.trailer);
+  theater._show = state.show;
+}
 function previewSeat(id, fromSeat = false) {
+  ensureHall();
   viewing = id;
   refreshMap();
   updateSheet(id);
