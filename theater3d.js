@@ -10,9 +10,9 @@ import { OrbitControls } from 'three/addons/OrbitControls.js';
 import { CSS3DRenderer, CSS3DObject } from 'three/addons/CSS3DRenderer.js';
 import { mergeGeometries } from 'three/addons/BufferGeometryUtils.js';
 
-const AREA_COLOR = { LG1: 0x9a1f45, LG2: 0x9a1f45, CE: 0xc0161f, EL: 0x8e1118, BU: 0x5a3033 };
-const C_SOLD = new THREE.Color(0x2a2224);
-const C_PICK = new THREE.Color(0x6fdc9a);
+const AREA_COLOR = { LG1: 0xa00330, LG2: 0xa00330, CE: 0xc50337, EL: 0x8a0229, BU: 0x5e6472 };
+const C_SOLD = new THREE.Color(0x1c1a22);
+const C_PICK = new THREE.Color(0xe6eaf0);
 const C_WHITE = new THREE.Color(0xffffff);
 const CSS_W = 1600;                               // px width of the CSS screen surface
 
@@ -62,7 +62,7 @@ export class Theater3D {
     stage.appendChild(this.gl.domElement);
 
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(0x070304, 0.018);
+    this.scene.fog = new THREE.FogExp2(0x02060e, 0.018);
     this.cssScene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(55, 1, 0.05, 300);
     this.camera.rotation.order = 'YXZ';
@@ -247,7 +247,7 @@ export class Theater3D {
     const out = document.createElement('canvas');
     out.width = outW; out.height = outH;
     const g = out.getContext('2d');
-    g.fillStyle = '#050203'; g.fillRect(0, 0, outW, outH);
+    g.fillStyle = '#02060E'; g.fillRect(0, 0, outW, outH);
     g.drawImage(this.gl.domElement, 0, 0, outW, outH);
     const url = out.toDataURL('image/jpeg', 0.85);
     hole.material = holeMat;
@@ -285,13 +285,13 @@ export class Theater3D {
   _buildRoom() {
     const h = this.hall, g = this.group;
     const W = h.wallX, C = h.ceiling, back = h.backZ + 0.5, len = back + 0.6;
-    const carpet = this._mat(0x1d1517), riser = this._mat(0x141012), wall = this._mat(0x0f0d0e);
-    const led = new THREE.MeshBasicMaterial({ color: 0x8a4a14 });
-    const aisleLed = new THREE.MeshBasicMaterial({ color: 0xffb35c });
+    const carpet = this._mat(0x170a12), riser = this._mat(0x0e0810), wall = this._mat(0x0b0910);
+    const led = new THREE.MeshBasicMaterial({ color: 0x8a0229 });
+    const aisleLed = new THREE.MeshBasicMaterial({ color: 0xcdd2db });
 
     // lights
-    g.add(new THREE.AmbientLight(0xffe0d8, 0.18));
-    g.add(new THREE.HemisphereLight(0x3a2224, 0x0a0405, 0.5));
+    g.add(new THREE.AmbientLight(0xf0e8ee, 0.18));
+    g.add(new THREE.HemisphereLight(0x3a1a2a, 0x02060e, 0.5));
     const c0 = new THREE.Color(this.movie.colors[0]).lerp(C_WHITE, 0.55);
     this.screenLight = new THREE.SpotLight(c0, 2.2, 0, 1.05, 1, 0);
     this.screenLight.position.set(0, h.screenCentreY, 1.2);
@@ -301,8 +301,8 @@ export class Theater3D {
     // floor in front of the first row + stage
     const firstZ = h.rows[0].z;
     this._add(new THREE.BoxGeometry(W * 2, 0.4, firstZ + 0.4), carpet, 0, -0.2, (firstZ - 0.4) / 2 - 0.2);
-    this._add(new THREE.BoxGeometry(h.screenW + 3, 0.5, 1.4), this._mat(0x1a0809), 0, 0.25, 0.5);
-    this._add(new THREE.BoxGeometry(h.screenW + 3, 0.04, 0.04), new THREE.MeshBasicMaterial({ color: 0x6fdc9a }), 0, 0.5, 1.2);
+    this._add(new THREE.BoxGeometry(h.screenW + 3, 0.5, 1.4), this._mat(0x1a0310), 0, 0.25, 0.5);
+    this._add(new THREE.BoxGeometry(h.screenW + 3, 0.04, 0.04), new THREE.MeshBasicMaterial({ color: 0xe6eaf0 }), 0, 0.5, 1.2);
 
     // stadium platforms with step lights
     h.rows.forEach((row, i) => {
@@ -328,12 +328,12 @@ export class Theater3D {
       for (let z = 0.4, k = 0; z < back - 0.5; z += 2.1, k++) {
         const fa = h.floorAt(z);
         const ph = C - fa - 2.2;
-        this._add(new THREE.BoxGeometry(0.12, ph, 1.9), this._mat(k % 2 ? 0x232022 : 0x1a1819, { roughness: 1 }),
+        this._add(new THREE.BoxGeometry(0.12, ph, 1.9), this._mat(k % 2 ? 0x1c1622 : 0x14111a, { roughness: 1 }),
           side * (W - 0.05), fa + 1.2 + ph / 2, z + 0.95);
         if (k % 2 === 0) {
-          const sconce = this._add(new THREE.BoxGeometry(0.08, 0.5, 0.18), new THREE.MeshBasicMaterial({ color: 0xffc27a }), side * (W - 0.14), fa + 2.4, z + 0.95);
+          const sconce = this._add(new THREE.BoxGeometry(0.08, 0.5, 0.18), new THREE.MeshBasicMaterial({ color: 0xf1f3f7 }), side * (W - 0.14), fa + 2.4, z + 0.95);
           if (k % 4 === 0) {
-            const pl = new THREE.PointLight(0xff9a50, 1.6, 7, 1.6);
+            const pl = new THREE.PointLight(0xff4a6e, 1.6, 7, 1.6);
             pl.position.set(side * (W - 0.6), fa + 2.4, z + 0.95);
             g.add(pl);
           }
@@ -346,18 +346,18 @@ export class Theater3D {
     this._add(new THREE.PlaneGeometry(W * 2, C + 2), wall, 0, C / 2, -0.35);
     const backWall = this._add(new THREE.PlaneGeometry(W * 2, C + 6), wall, 0, C / 2, back);
     backWall.rotation.y = Math.PI;
-    const ceil = this._add(new THREE.PlaneGeometry(W * 2, len), this._mat(0x0b0506), 0, C, len / 2 - 0.6);
+    const ceil = this._add(new THREE.PlaneGeometry(W * 2, len), this._mat(0x05060e), 0, C, len / 2 - 0.6);
     ceil.rotation.x = Math.PI / 2;
     const starPos = [];
     for (let i = 0; i < 520; i++) starPos.push((Math.random() * 2 - 1) * (W - 0.4), C - 0.02, Math.random() * (back - 1) + 0.5);
     const stars = new THREE.BufferGeometry();
     stars.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-    this.stars = new THREE.Points(stars, new THREE.PointsMaterial({ color: 0xffe6c0, size: 0.06, sizeAttenuation: true, fog: false }));
+    this.stars = new THREE.Points(stars, new THREE.PointsMaterial({ color: 0xe8ecf4, size: 0.06, sizeAttenuation: true, fog: false }));
     g.add(this.stars);
 
     // projector window + light beam toward the screen
     const proj = new THREE.Vector3(0, Math.min(C - 1, h.rows[h.rows.length - 1].floor + 3.2), back - 0.05);
-    this._add(new THREE.PlaneGeometry(0.8, 0.5), new THREE.MeshBasicMaterial({ color: 0xfff4dd }), proj.x, proj.y, proj.z - 0.01).rotation.y = Math.PI;
+    this._add(new THREE.PlaneGeometry(0.8, 0.5), new THREE.MeshBasicMaterial({ color: 0xf4f6fa }), proj.x, proj.y, proj.z - 0.01).rotation.y = Math.PI;
     const sw = h.screenW / 2, sb = h.screenBottom, st = h.screenBottom + h.screenH;
     const beam = new THREE.BufferGeometry();
     const p = proj.toArray();
@@ -383,7 +383,7 @@ export class Theater3D {
     const pos = cGeo.attributes.position;
     for (let i = 0; i < pos.count; i++) pos.setZ(i, Math.sin(pos.getX(i) * 9) * 0.09);
     cGeo.computeVertexNormals();
-    const velvet = this._mat(0x7a0c14, { roughness: 0.65, side: THREE.DoubleSide });
+    const velvet = this._mat(0x8e0229, { roughness: 0.65, side: THREE.DoubleSide });
     [-1, 1].forEach((side) => this._add(cGeo, velvet, side * (sw / 2 + cw / 2 - 0.25), cy + 0.6, 0.15));
     this._add(new THREE.BoxGeometry(sw + 5, 0.9, 0.3), velvet, 0, cy + sh / 2 + 0.9, 0.2);
     // Kamala logo above the screen
@@ -445,7 +445,7 @@ export class Theater3D {
     this.seatMesh.instanceMatrix.needsUpdate = true;
     this.group.add(this.seatMesh);
 
-    this.people = new THREE.InstancedMesh(personGeometry(), new THREE.MeshStandardMaterial({ color: 0x0e0a0b, roughness: 0.6 }), n);
+    this.people = new THREE.InstancedMesh(personGeometry(), new THREE.MeshStandardMaterial({ color: 0x08060c, roughness: 0.6 }), n);
     this.people.count = 0;
     this.group.add(this.people);
   }

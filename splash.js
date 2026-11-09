@@ -90,9 +90,9 @@
       const p = (el % per) / per;
       g.clearRect(0, 0, S, S);
       // film-grain grey disc
-      g.fillStyle = '#2a2a2f'; g.beginPath(); g.arc(c, c, R, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#1A1D27'; g.beginPath(); g.arc(c, c, R, 0, Math.PI * 2); g.fill();
       // sweep
-      g.fillStyle = 'rgba(111,220,154,.28)';
+      g.fillStyle = 'rgba(197,3,55,.55)';
       g.beginPath(); g.moveTo(c, c); g.arc(c, c, R, -Math.PI / 2, -Math.PI / 2 + p * Math.PI * 2); g.closePath(); g.fill();
       // crosshair + rings
       g.strokeStyle = 'rgba(255,255,255,.75)'; g.lineWidth = 2.5;

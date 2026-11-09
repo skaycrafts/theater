@@ -5,6 +5,8 @@
    ========================================================= */
 
 import { Theater3D } from './theater3d.js';
+import { initChat } from './chat.js';
+import { createFlipCard } from './flipcard.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -16,6 +18,9 @@ const THEATRE = {
   name: 'Kamala Cinemas 4K RGB Laser Dolby',
   address: '156, Arcot Road, Vadapalani, Chennai, Tamil Nadu 600026',
   amenities: ['4K RGB Laser', 'Dolby 7.1', 'Sofa seating', 'Air conditioning', 'Food & Beverages', 'Metro nearby', 'Parking · 150 cars, 350 two-wheelers'],
+  phone: '092822 00400', phoneHref: '+919282200400',
+  maps: 'https://www.google.com/maps/search/?api=1&query=Kamala+Cinemas+Vadapalani+Chennai',
+  instagram: 'https://www.instagram.com/kamalacinemas_vishnu/',
 };
 
 /* ---------- Now showing ---------- */
@@ -24,7 +29,7 @@ const MOVIES = [
     id: 'ramayana', title: 'Ramayana', poster: 'assets/posters/ramayana.jpg',
     genre: 'Epic · Mythological', lang: 'Tamil', otherLangs: 'Also in Hindi, Telugu, Kannada',
     cert: 'U', dur: '3h 15m', released: '5 Nov 2026', director: 'Nitesh Tiwari',
-    cast: 'Ranbir Kapoor, Yash, Sai Pallavi, Ravie Dubey', colors: ['#e0662a', '#2a0d08'], tag: 'In 3D',
+    cast: 'Ranbir Kapoor, Yash, Sai Pallavi, Ravie Dubey', colors: ['#C50337', '#02060E'], tag: 'In 3D',
     trailer: 'IbX1Ap7E0XQ',   // Ramayana: Rise of a Legend — New Trailer (Tamil)
     blurb: 'Vishnu is born as Prince Rama to end the reign of the demon emperor Ravana — an exile, an abduction, and the greatest war ever fought.',
   },
@@ -32,7 +37,7 @@ const MOVIES = [
     id: 'scene', title: 'Scene', poster: 'assets/posters/scene.jpg',
     genre: 'Action · Comedy · Thriller', lang: 'Tamil', otherLangs: '',
     cert: 'UA16+', dur: '2h 29m', released: '6 Nov 2026', director: 'Jithu Madhavan',
-    cast: 'Suriya, Nazriya Nazim, Naslen, Anandraj', colors: ['#e8343a', '#1d4a6b'], tag: 'Most shows',
+    cast: 'Suriya, Nazriya Nazim, Naslen, Anandraj', colors: ['#C50337', '#02060E'], tag: 'Most shows',
     trailer: 'LM4ByXufv2w',   // Scene — Official Trailer (Sony Music South)
     blurb: 'Police officer Inbaraj reopens a case he never closed — this time with a chaotic, mismatched team along for the ride.',
   },
@@ -40,7 +45,7 @@ const MOVIES = [
     id: 'mookuthi', title: 'Mookuthi Amman 2', poster: 'assets/posters/mookuthi-amman-2.jpg',
     genre: 'Devotional · Thriller · Fantasy', lang: 'Tamil', otherLangs: '',
     cert: 'UA16+', dur: '2h 24m', released: '6 Nov 2026', director: 'Sundar C',
-    cast: 'Nayanthara, Duniya Vijay, Regina Cassandra, Yogi Babu', colors: ['#e8a020', '#3d1a0a'], tag: 'New release',
+    cast: 'Nayanthara, Duniya Vijay, Regina Cassandra, Yogi Babu', colors: ['#C50337', '#02060E'], tag: 'New release',
     trailer: 'v263z3rTcLw',   // Mookuthi Amman 2 — World of Mahasakthi (Vels Film International)
     blurb: 'Goddess Mookuthi Amman returns across timelines to protect a young prince from a ruthless sorceress.',
   },
@@ -98,7 +103,7 @@ const EL_ROW_S2 = 'SSSSSSS...SSSSSSSSSSSSSSSSS...SSSSSSS';
 const EL_ROW_S2b = '.SSSSSS...SSSSSSSSSSSSSSSSS...SSSSSS';
 const rowsOf = (letters, cells) => letters.split('').map((r) => [r, cells]);
 
-const AREA_COLORS = { LG1: '#ff5a8a', LG2: '#ff5a8a', CE: 'var(--kamala-yellow)', EL: '#f2e6e4', BU: '#b39a98' };
+const AREA_COLORS = { LG1: '#F07A97', LG2: '#F07A97', CE: 'var(--kamala-silver)', EL: '#F3F5F9', BU: '#8F96A3' };
 const SCREENS = {
   S1: {
     name: 'Screen 1', tech: '4K RGB Laser · Dolby 7.1',
@@ -209,21 +214,16 @@ const dateLabel = (iso) => dateObj(iso).toLocaleDateString('en-IN', { weekday: '
 const toMin = (t) => { const [hm, ap] = t.split(' '); let [h, m] = hm.split(':').map(Number); if (ap === 'PM' && h !== 12) h += 12; if (ap === 'AM' && h === 12) h = 0; return h * 60 + m; };
 
 /* ---------- Navigation ---------- */
-const ORDER = ['movies', 'shows', 'seats', 'checkout'];
 function go(step) {
   if (step === 'shows' && !state.movie) step = 'movies';
   if (step === 'seats' && !state.show) step = state.movie ? 'shows' : 'movies';
   if (step === 'checkout' && !state.selected.length) step = 'seats';
   const prev = state.step;
   state.step = step;
+  document.body.dataset.step = step;
   if (step === 'checkout' && prev !== 'checkout') startHold();
   if (step !== 'checkout') stopHold();
   $$('.view').forEach((v) => v.classList.toggle('active', v.id === 'view-' + step));
-  const idx = ORDER.indexOf(step);
-  $$('#stepper li').forEach((li, i) => {
-    li.classList.toggle('current', i === idx);
-    li.classList.toggle('done', i < idx);
-  });
   document.body.classList.toggle('immersive', step === 'seats');
   if (step === 'seats') theater.start(); else theater.stop();
   window.scrollTo({ top: 0, behavior: 'instant' });
@@ -231,8 +231,13 @@ function go(step) {
 document.addEventListener('click', (e) => {
   const t = e.target.closest('[data-go]');
   if (t) { e.preventDefault(); go(t.dataset.go); return; }
-  const li = e.target.closest('#stepper li.done');
-  if (li && state.step !== 'done') go(li.dataset.step);
+  if (e.target.closest('[data-foot-top]')) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+  const jump = e.target.closest('[data-foot-jump]');
+  if (jump) {
+    const elsewhere = state.step !== 'movies';
+    if (elsewhere) go('movies');
+    $('#' + jump.dataset.footJump).scrollIntoView({ behavior: elsewhere ? 'instant' : 'smooth', block: 'start' });
+  }
 });
 
 /* ---------- Step 1: the lobby ---------- */
@@ -266,25 +271,67 @@ function renderMovies() {
   }).join('');
   renderComingSoon();
   $('#theatreInfo').innerHTML = `
-    <div class="info-main">
-      <h2 class="section-title">About the theatre</h2>
-      <p class="addr">${THEATRE.name}<br><span>${THEATRE.address}</span></p>
-      <div class="chips">${THEATRE.amenities.map((a) => `<span class="chip">${a}</span>`).join('')}</div>
+    <span class="flip-card__shadow" aria-hidden="true"></span>
+    <div class="flip-card__rotor">
+      <section class="flip-card__face flip-card__face--front ti-face">
+        <h2 class="ti-title">About the theatre</h2>
+        <div class="ti-row">
+          <p class="ti-place"><b>${THEATRE.name}</b>${THEATRE.address}</p>
+          <div class="ti-chips">${THEATRE.amenities.map((a) => `<span>${a}</span>`).join('')}</div>
+        </div>
+        <button type="button" class="ti-flip" data-flip>See the screens <i aria-hidden="true">↻</i></button>
+        <span class="flip-card__glare" aria-hidden="true"></span>
+      </section>
+      <section class="flip-card__face flip-card__face--back ti-face">
+        <h2 class="ti-title">The screens</h2>
+        <div class="ti-screens">
+          ${Object.values(SCREENS).map((s) => `
+            <div class="ti-screen">
+              <b>${s.name}</b>
+              <strong>${s.capacity} seats</strong>
+              <span>${s.tech}</span>
+              <small>${s.areas.map((a) => a.name).join(' · ')}</small>
+            </div>`).join('')}
+        </div>
+        <button type="button" class="ti-flip" data-flip>Back to the theatre <i aria-hidden="true">↻</i></button>
+        <span class="flip-card__glare" aria-hidden="true"></span>
+      </section>
+    </div>`;
+  createFlipCard($('#theatreInfo'));
+  $('#footInfo').innerHTML = `
+    <p class="foot-tag">See the screen from your seat before you book.</p>
+    <div class="foot-col">
+      <div>
+        <h2>Visit</h2>
+        <p>156, Arcot Road, Vadapalani<br>Chennai, Tamil Nadu 600026</p>
+        <a class="foot-cta" href="${THEATRE.maps}" target="_blank" rel="noopener">Get directions ↗</a>
+      </div>
     </div>
-    <div class="screens">
-      ${Object.entries(SCREENS).map(([id, s]) => `
-        <div class="screen-card">
-          <b>${s.name}</b>
-          <span>${s.capacity} seats · ${s.tech}</span>
-          <small>${s.areas.map((a) => a.name).join(' · ')}</small>
-        </div>`).join('')}
+    <div class="foot-col">
+      <div>
+        <h2>Call</h2>
+        <p><a href="tel:${THEATRE.phoneHref}">${THEATRE.phone}</a></p>
+      </div>
+      <div>
+        <h2>Follow</h2>
+        <p><a href="${THEATRE.instagram}" target="_blank" rel="noopener">Instagram ↗</a></p>
+      </div>
+    </div>
+    <div class="foot-col">
+      <div>
+        <h2>Explore</h2>
+        <ul>
+          <li><button type="button" data-foot-jump="nowShowing">Today at Kamala</button></li>
+          <li><button type="button" data-foot-jump="comingSoon">Coming soon</button></li>
+          <li><button type="button" data-foot-jump="theatreInfo">About the theatre</button></li>
+        </ul>
+      </div>
     </div>`;
   initTilt();
 }
 
 /* Coverflow carousel of now-showing posters */
 let cf = 0, cfTimer = null;
-let cfAuto = true;          // auto-advance until the visitor touches the carousel
 let lobbyInView = true;     // only auto-advance while the lobby is actually on screen
 function renderLobby() {
   $('#coverflow').innerHTML = MOVIES.map((m, i) => `
@@ -345,41 +392,41 @@ function setCf(i) {
   while (bg.children.length > 2) bg.firstElementChild.remove();
   $('#lobby').style.setProperty('--accent', m.colors[0]);
 }
+const CF_INTERVAL = 3000;
+// hold the current film only while the pointer is on something clickable for it
+const CF_HOLD = '.cf-card.active:hover, .cf-nav:hover, .li-slide.on .lobby-cta:hover';
 function startCfTimer() {
   clearInterval(cfTimer);
   cfTimer = setInterval(() => {
-    if (cfAuto && lobbyInView && state.step === 'movies' && !document.hidden && !$('#lobby').matches(':hover') && $('#trailerModal').hidden) setCf(cf + 1);
-  }, 7000);
+    if (lobbyInView && state.step === 'movies' && !document.hidden && !$('#lobby').querySelector(CF_HOLD) && $('#trailerModal').hidden) setCf(cf + 1);
+  }, CF_INTERVAL);
 }
-const stopAuto = () => { cfAuto = false; };
 // pause the carousel + its animations whenever the lobby isn't on screen
 new IntersectionObserver(([e]) => {
   lobbyInView = e.intersectionRatio >= 0.55;
   $('#lobby').classList.toggle('paused', !e.isIntersecting);
 }, { threshold: [0, 0.55] }).observe($('#lobby'));
-// once you scroll down to browse, stop rotating for good
-window.addEventListener('scroll', () => { if (state.step === 'movies' && window.scrollY > 240) stopAuto(); }, { passive: true });
 let cfDown = null, cfSwiped = false;
 $('#coverflow').addEventListener('click', (e) => {
   const c = e.target.closest('.cf-card');
   if (!c || cfSwiped) return;
   if (c.classList.contains('active')) selectMovie(MOVIES[cf].id);
-  else { stopAuto(); setCf(+c.dataset.cf); }
+  else { startCfTimer(); setCf(+c.dataset.cf); }
 });
-$('#cfPrev').addEventListener('click', () => { stopAuto(); setCf(cf - 1); });
-$('#cfNext').addEventListener('click', () => { stopAuto(); setCf(cf + 1); });
-$('#cfDots').addEventListener('click', (e) => { const b = e.target.closest('[data-cfdot]'); if (b) { stopAuto(); setCf(+b.dataset.cfdot); } });
+$('#cfPrev').addEventListener('click', () => { startCfTimer(); setCf(cf - 1); });
+$('#cfNext').addEventListener('click', () => { startCfTimer(); setCf(cf + 1); });
+$('#cfDots').addEventListener('click', (e) => { const b = e.target.closest('[data-cfdot]'); if (b) { startCfTimer(); setCf(+b.dataset.cfdot); } });
 $('#coverflow').addEventListener('pointerdown', (e) => { cfDown = e.clientX; cfSwiped = false; });
 $('#coverflow').addEventListener('pointerup', (e) => {
   if (cfDown === null) return;
   const dx = e.clientX - cfDown;
   cfDown = null;
-  if (Math.abs(dx) > 40) { cfSwiped = true; stopAuto(); setCf(cf + (dx < 0 ? 1 : -1)); setTimeout(() => { cfSwiped = false; }, 0); }
+  if (Math.abs(dx) > 40) { cfSwiped = true; startCfTimer(); setCf(cf + (dx < 0 ? 1 : -1)); setTimeout(() => { cfSwiped = false; }, 0); }
 });
 document.addEventListener('keydown', (e) => {
   if (state.step !== 'movies' || e.target.closest?.('input, textarea') || !$('#trailerModal').hidden) return;
-  if (e.key === 'ArrowLeft') { stopAuto(); setCf(cf - 1); }
-  if (e.key === 'ArrowRight') { stopAuto(); setCf(cf + 1); }
+  if (e.key === 'ArrowLeft') { startCfTimer(); setCf(cf - 1); }
+  if (e.key === 'ArrowRight') { startCfTimer(); setCf(cf + 1); }
 });
 window.addEventListener('resize', () => { if (state.step === 'movies') setCf(cf); });
 
@@ -453,6 +500,7 @@ function renderComingSoon() {
       </div>
     </article>`;
   }).join('');
+  syncSoonRail();
 }
 $('#soonFilters').addEventListener('click', (e) => {
   const b = e.target.closest('[data-lang]');
@@ -468,6 +516,46 @@ $('#soonRow').addEventListener('click', (e) => {
   try { localStorage.setItem(REMIND_KEY, JSON.stringify([...reminders])); } catch {}
   renderComingSoon();
 });
+
+/* Glass scrubber for the Coming Soon row */
+function syncSoonRail() {
+  const row = $('#soonRow'), rail = $('#soonRail'), thumb = $('#soonThumb');
+  const overflow = row.scrollWidth - row.clientWidth;
+  rail.hidden = overflow <= 1;
+  if (rail.hidden) return;
+  const full = rail.clientWidth;
+  const w = Math.max(72, Math.min(full * 0.3, full * row.clientWidth / row.scrollWidth));
+  thumb.style.width = `${w}px`;
+  thumb.style.transform = `translate3d(${(full - w) * (row.scrollLeft / overflow)}px, 0, 0)`;
+}
+$('#soonRow').addEventListener('scroll', syncSoonRail, { passive: true });
+new ResizeObserver(syncSoonRail).observe($('#soonRow'));
+$('#soonRail').addEventListener('pointerdown', (e) => {
+  const row = $('#soonRow'), rail = $('#soonRail'), thumb = $('#soonThumb');
+  const box = rail.getBoundingClientRect(), t = thumb.getBoundingClientRect();
+  const grab = e.target === thumb ? e.clientX - t.left : t.width / 2;
+  const travel = box.width - t.width;
+  const move = (ev) => {
+    const x = Math.min(travel, Math.max(0, ev.clientX - box.left - grab));
+    row.scrollLeft = (x / travel) * (row.scrollWidth - row.clientWidth);
+  };
+  const end = () => {
+    rail.removeEventListener('pointermove', move);
+    rail.removeEventListener('pointerup', end);
+    rail.removeEventListener('pointercancel', end);
+    row.style.scrollSnapType = '';           // let the row settle on a card again
+    thumb.classList.remove('dragging');
+  };
+  row.style.scrollSnapType = 'none';         // snapping would fight the drag
+  thumb.classList.add('dragging');
+  rail.setPointerCapture(e.pointerId);
+  rail.addEventListener('pointermove', move);
+  rail.addEventListener('pointerup', end);
+  rail.addEventListener('pointercancel', end);
+  move(e);
+});
+liquidGlass($('.topbar'), { scale: -80, chroma: 5, border: 0.1, mapBlur: 9, blur: 7, saturate: 1.6 });
+liquidGlass($('#soonThumb'), { scale: -70, chroma: 5, border: 0.12, mapBlur: 6, blur: 0.6, saturate: 1.4 });
 
 function selectMovie(id) {
   state.movie = MOVIES.find((m) => m.id === id);
@@ -766,14 +854,14 @@ function drawMini(cv, id) {
   g.strokeStyle = 'rgba(255,255,255,.7)'; g.lineWidth = 1.2;
   g.beginPath(); g.moveTo(W * 0.22, 4); g.quadraticCurveTo(W / 2, 1, W * 0.78, 4); g.stroke();
   all.forEach((s) => {
-    g.fillStyle = state.selected.includes(s.id) ? '#6fdc9a' : state.occupied.has(s.id) ? 'rgba(255,255,255,.08)' : 'rgba(255,255,255,.28)';
+    g.fillStyle = state.selected.includes(s.id) ? '#E6EAF0' : state.occupied.has(s.id) ? 'rgba(255,255,255,.08)' : 'rgba(255,255,255,.28)';
     g.fillRect(ox + s.x * k - 0.7, oy + s.z * k - 0.7, 1.4, 1.4);
   });
   const c = hall.seats.get(id);
   if (c) {
-    g.fillStyle = '#6fdc9a';
+    g.fillStyle = '#E6EAF0';
     g.beginPath(); g.arc(ox + c.x * k, oy + c.z * k, 3, 0, Math.PI * 2); g.fill();
-    g.strokeStyle = 'rgba(111,220,154,.4)'; g.lineWidth = 3;
+    g.strokeStyle = 'rgba(230,234,240,.4)'; g.lineWidth = 3;
     g.beginPath(); g.arc(ox + c.x * k, oy + c.z * k, 6, 0, Math.PI * 2); g.stroke();
   }
 }
@@ -998,7 +1086,6 @@ $('#checkoutForm').addEventListener('submit', (e) => {
     renderDone(fd.get('name'), fd.get('email'), fd.get('phone'));
     state.step = 'done';
     $$('.view').forEach((v) => v.classList.toggle('active', v.id === 'view-done'));
-    $$('#stepper li').forEach((li) => { li.classList.remove('current'); li.classList.add('done'); });
     document.body.classList.remove('immersive');
     theater.stop();
     window.scrollTo({ top: 0 });
@@ -1121,7 +1208,7 @@ function confetti() {
   document.body.appendChild(c);
   const g = c.getContext('2d');
   const W = c.width = innerWidth, H = c.height = innerHeight;
-  const cols = ['#e3121b', '#ffe81a', '#ffffff', '#ff5a5f', '#ffb35c'];
+  const cols = ['#C50337', '#E6EAF0', '#ffffff', '#8F96A3', '#7A0224'];
   const ps = Array.from({ length: 170 }, () => ({
     x: W / 2 + (Math.random() - 0.5) * 200, y: H * 0.35, vx: (Math.random() - 0.5) * 14, vy: -Math.random() * 14 - 4,
     w: 5 + Math.random() * 6, h: 8 + Math.random() * 8, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.4, c: cols[(Math.random() * cols.length) | 0],
@@ -1140,3 +1227,5 @@ function confetti() {
 /* ---------- Boot ---------- */
 renderMovies();
 go('movies');
+const chat = initChat({ theatre: THEATRE, screens: SCREENS, movies: MOVIES, comingSoon: COMING_SOON, dates: DATES, showsFor, shortDay, todayISO, rupee });
+liquidGlass(chat.launch, { scale: -46, chroma: 4, border: 0.12, mapBlur: 6, blur: 5, saturate: 1.6 });

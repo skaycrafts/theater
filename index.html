@@ -6,12 +6,14 @@
   <title>Kamala Cinemas — Book Tickets</title>
   <meta name="description" content="Book movie tickets at Kamala Cinemas and see the view of the screen from your seat before you book.">
   <link rel="icon" type="image/png" href="assets/favicon.png">
-  <meta name="theme-color" content="#0b0b0d">
+  <meta name="theme-color" content="#02060E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="splash.css">
+  <link rel="stylesheet" href="chat.css">
+  <link rel="stylesheet" href="flipcard.css">
   <script>
     /* show the opening splash once per visit (add ?splash to the URL to see it again) */
     try {
@@ -45,12 +47,6 @@
     <a class="brand" href="#" data-go="movies" aria-label="Kamala Cinemas home">
       <img class="brand-logo" src="assets/kamala-logo.png" alt="Kamala Cinemas" width="1000" height="200">
     </a>
-    <ol class="stepper" id="stepper" aria-label="Booking steps">
-      <li data-step="movies"><span>1</span>Movie</li>
-      <li data-step="shows"><span>2</span>Showtime</li>
-      <li data-step="seats"><span>3</span>Seats</li>
-      <li data-step="checkout"><span>4</span>Checkout</li>
-    </ol>
   </header>
 
   <main>
@@ -59,7 +55,6 @@
       <div class="lobby" id="lobby" aria-label="Now showing">
         <div class="lobby-bg" id="lobbyBg" aria-hidden="true"></div>
         <div class="lobby-lights" aria-hidden="true"><i></i><i></i></div>
-        <div class="marquee" aria-hidden="true"></div>
         <div class="lobby-inner">
           <div class="lobby-info" id="lobbyInfo" aria-live="polite"></div>
           <div class="cf-stage">
@@ -87,8 +82,9 @@
         <div class="soon-filters" id="soonFilters" role="tablist" aria-label="Filter by language"></div>
       </div>
       <div class="soon-row" id="soonRow" aria-labelledby="comingSoon"></div>
+      <div class="soon-rail" id="soonRail" aria-hidden="true"><div class="soon-thumb" id="soonThumb"></div></div>
 
-      <div class="theatre-info" id="theatreInfo"></div>
+      <div class="theatre-info flip-card" id="theatreInfo"></div>
     </section>
 
     <!-- STEP 2: SHOWTIMES -->
@@ -219,8 +215,14 @@
   </main>
 
   <footer class="foot">
-    <img class="foot-logo" src="assets/kamala-logo.png" alt="Kamala Cinemas" width="1000" height="200">
-    <span>156, Arcot Road, Vadapalani, Chennai 600026 · 2 screens · 4K RGB Laser · Dolby 7.1</span>
+    <div class="foot-top" id="footInfo"></div>
+    <div class="foot-legal">
+      <span>© 2026 Kamala Cinemas</span>
+      <span class="foot-tech">2 screens · 4K RGB Laser · Dolby 7.1</span>
+      <button type="button" data-foot-top>Back to top ↑</button>
+    </div>
+    <div class="foot-mark"><img src="assets/kamala-emblem.png" alt="Kamala Cinemas" width="784" height="788" loading="lazy"></div>
+    <div class="foot-name" aria-hidden="true">Kamala Cinemas</div>
   </footer>
 
   <div class="modal" id="trailerModal" hidden role="dialog" aria-modal="true" aria-labelledby="trailerTitle">
@@ -234,6 +236,7 @@
     </div>
   </div>
 
+  <script src="vendor/liquid-glass/liquid-glass.js"></script>
   <script type="importmap">
     { "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }
   </script>

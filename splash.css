@@ -7,7 +7,7 @@ html.no-splash .splash, html.splash-done .splash { display: none; }
 .splash {
   --open: 0;                         /* 0 = curtains closed, 1 = fully open (set from JS while dragging) */
   position: fixed; inset: 0; z-index: 500; overflow: hidden;
-  background: radial-gradient(120% 80% at 50% 30%, #17171b 0%, #070708 70%);
+  background: radial-gradient(120% 80% at 50% 30%, #2A0412 0%, #02060E 70%);
   color: #fff; touch-action: none; user-select: none; -webkit-user-select: none;
   transition: opacity .7s ease, transform .9s cubic-bezier(.2,.8,.2,1);
 }
@@ -17,8 +17,8 @@ html.no-splash .splash, html.splash-done .splash { display: none; }
 .spl-screen {
   position: absolute; left: 50%; top: 46%; width: min(82vw, 640px); aspect-ratio: 16 / 9;
   transform: translate(-50%, -50%); border-radius: 6px; overflow: hidden;
-  background: radial-gradient(circle at 50% 50%, #3a3a40, #1c1c20 70%);
-  box-shadow: 0 0 0 3px #050505, 0 0 120px rgba(255,255,255,.08);
+  background: radial-gradient(circle at 50% 50%, #2E323D, #10131B 70%);
+  box-shadow: 0 0 0 3px #02060E, 0 0 120px rgba(255,255,255,.08);
   display: grid; place-items: center;
 }
 .spl-screen canvas { position: absolute; top: 5%; left: 50%; height: 90%; width: auto; aspect-ratio: 1; transform: translateX(-50%); }
@@ -35,14 +35,14 @@ html.no-splash .splash, html.splash-done .splash { display: none; }
   position: absolute; top: 0; bottom: 0; width: 51%; z-index: 2;
   background:
     linear-gradient(180deg, rgba(0,0,0,.55) 0%, transparent 18%, transparent 78%, rgba(0,0,0,.6) 100%),
-    repeating-linear-gradient(90deg, #4a0710 0px, #7d0f1c 9px, #a3192a 15px, #7d0f1c 21px, #4a0710 30px);
+    repeating-linear-gradient(90deg, #3F0112 0px, #8E0229 9px, #C50337 15px, #8E0229 21px, #3F0112 30px);
   box-shadow: inset 0 0 60px rgba(0,0,0,.6);
   transition: transform .9s cubic-bezier(.65,0,.25,1);
   will-change: transform;
 }
 .curtain::after {                    /* scalloped hem */
   content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 18px;
-  background: radial-gradient(circle at 15px -6px, transparent 16px, #3a050c 17px) 0 0 / 30px 18px repeat-x;
+  background: radial-gradient(circle at 15px -6px, transparent 16px, #2A010C 17px) 0 0 / 30px 18px repeat-x;
   opacity: .9;
 }
 .curtain.left { left: 0; transform-origin: left center; transform: scaleX(calc(1 - var(--open) * .84)); }
@@ -58,7 +58,7 @@ html.no-splash .splash, html.splash-done .splash { display: none; }
   position: absolute; left: -2%; right: -2%; top: 0; height: 64px; z-index: 4;
   background:
     radial-gradient(circle at 25px 64px, transparent 22px, transparent 23px) 0 0 / 50px 64px,
-    linear-gradient(180deg, #2a0409, #6e0d19 70%, #8b1322);
+    linear-gradient(180deg, #1A0108, #6B0220 70%, #A5032E);
   -webkit-mask: radial-gradient(circle at 25px 64px, transparent 24px, #000 25px) 0 0 / 50px 64px repeat-x;
           mask: radial-gradient(circle at 25px 64px, transparent 24px, #000 25px) 0 0 / 50px 64px repeat-x;
   box-shadow: 0 10px 30px rgba(0,0,0,.6);
@@ -72,11 +72,11 @@ html.no-splash .splash, html.splash-done .splash { display: none; }
 }
 .spl-logo {
   width: min(70vw, 340px); height: auto;
-  filter: drop-shadow(0 0 18px rgba(111,220,154,.45)) drop-shadow(0 6px 20px rgba(0,0,0,.8));
+  filter: drop-shadow(0 0 18px rgba(232,236,242,.35)) drop-shadow(0 6px 20px rgba(0,0,0,.8));
   animation: logoIn 1.2s cubic-bezier(.2,.8,.2,1) both, logoGlow 3.2s ease-in-out 1.2s infinite;
 }
 @keyframes logoIn { from { opacity: 0; transform: translateY(14px) scale(.94); filter: blur(8px); } }
-@keyframes logoGlow { 50% { filter: drop-shadow(0 0 30px rgba(111,220,154,.7)) drop-shadow(0 6px 20px rgba(0,0,0,.8)); } }
+@keyframes logoGlow { 50% { filter: drop-shadow(0 0 30px rgba(232,236,242,.55)) drop-shadow(0 6px 20px rgba(0,0,0,.8)); } }
 .spl-place { margin: 14px 0 0; font-size: 11px; font-weight: 700; letter-spacing: 5px; text-transform: uppercase; color: rgba(255,255,255,.6); animation: fadeUp .8s .5s both; }
 .spl-tag { margin: 18px 0 0; font-family: var(--display, 'Bebas Neue', Impact, sans-serif); font-size: clamp(26px, 7.5vw, 40px); letter-spacing: 1px; line-height: 1.05; text-shadow: 0 4px 20px rgba(0,0,0,.7); animation: fadeUp .8s .75s both; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } }
